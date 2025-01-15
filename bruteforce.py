@@ -38,7 +38,7 @@ def bruteforce():
     tabLen = len(actions)
     bestProfit = 0
     bestCombination = ()
-    for r in range(tabLen - 1):
+    for r in range(tabLen):
         for combination in combinations(actions, r):
             cost = calculate_cost(combination)
             profit = calculate_profit(combination)
