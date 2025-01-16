@@ -22,10 +22,6 @@ def readFile():
     return tab
 
 
-def calculate_percent(combination):
-    return sum(round((action["profit"]/action["cost"]) - 1, 2) * 100 for action in combination)
-
-
 def calculate_cost(combination):
     return sum(action["cost"] for action in combination)
 
