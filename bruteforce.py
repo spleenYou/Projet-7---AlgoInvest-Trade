@@ -8,17 +8,15 @@ MAX_EXPENSE = 500
 def readFile():
     tab = []
     with open("data/Liste actions.csv") as csv_file:
+        next(csv_file)
         csv_data = csv.reader(csv_file, delimiter=",")
         for data in csv_data:
-            try:
-                int(data[1])
-                tab.append({
-                    "name": data[0],
-                    "cost": int(data[1]),
-                    "profit": int(data[2].replace("%", ""))
-                })
-            except ValueError:
-                None
+            int(data[1])
+            tab.append({
+                "name": data[0],
+                "cost": int(data[1]),
+                "profit": int(data[2].replace("%", ""))
+            })
     return tab
 
 
