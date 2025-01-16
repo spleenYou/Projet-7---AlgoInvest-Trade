@@ -18,19 +18,15 @@ def readFile():
     return tab
 
 
-def calculate_percent(combination):
-    return sum(round((action["profit"]/action["cost"]) - 1, 2) * 100 for action in combination)
-
-
-def calculate_cost(combination):
+def sum_total_cost(combination):
     return sum(action["cost"] for action in combination)
 
 
-def calculate_profit(combination):
+def sum_total_profit(combination):
     return sum(action["cost"] * (1 + (action["profit"] / 100)) for action in combination)
 
 
-def calcul_limit(actions, MAX_EXPENSE):
+def calcul_length_of_combination(actions, MAX_EXPENSE):
     total = 0
     loop = 0
     while total <= MAX_EXPENSE:
@@ -41,13 +37,13 @@ def calcul_limit(actions, MAX_EXPENSE):
 
 def bruteforce(actions, MAX_EXPENSE):
     actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
-    limit = calcul_limit(actions, MAX_EXPENSE)
+    length_of_combination = calcul_length_of_combination(actions, MAX_EXPENSE)
     bestProfit = 0
     bestCombination = ()
-    for combination in combinations(actions, limit):
-        cost = calculate_cost(combination)
+    for combination in combinations(actions, length_of_combination):
+        cost = sum_total_cost(combination)
         if cost <= MAX_EXPENSE:
-            profitCost = calculate_profit(combination)
+            profitCost = sum_total_profit(combination)
             profit = profitCost - cost
             if profit > bestProfit:
                 bestProfit = profit
@@ -61,8 +57,8 @@ if __name__ == "__main__":
     actions = readFile()
     best = bruteforce(actions, MAX_EXPENSE)
     print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
-    cost = calculate_cost(best)
-    profit = calculate_profit(best)
+    cost = sum_total_cost(best)
+    profit = sum_total_profit(best)
     # for action in best:
     #     print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']}%")
     print(f"le cout total est de {cost}€ "
