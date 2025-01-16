@@ -35,11 +35,12 @@ def bruteforce(actions):
     for r in range(1, tabLen):
         for combination in combinations(actions, r):
             cost = sum_total_cost(combination)
-            profitCost = sum_total_profit(combination)
-            profit = profitCost - cost
-            if cost <= MAX_EXPENSE and profit > bestProfit:
-                bestProfit = profit
-                bestCombination = combination
+            if cost <= MAX_EXPENSE:
+                profitCost = sum_total_profit(combination)
+                profit = profitCost - cost
+                if profit > bestProfit:
+                    bestProfit = profit
+                    bestCombination = combination
     return bestCombination
 
 
