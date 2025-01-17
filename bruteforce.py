@@ -14,7 +14,6 @@ def readFile():
                 "name": data[0],
                 "cost": int(data[1]),
                 "value_after": int(data[1]) * (1 + int(data[2].replace("%", "")) / 100)
-                # "profit": int(data[2].replace("%", ""))
             })
     return tab
 
@@ -45,8 +44,8 @@ def bruteforce(actions, MAX_EXPENSE):
 
 if __name__ == "__main__":
     MAX_EXPENSE = 500
-    actions = readFile()
     start = time.time()
+    actions = readFile()
     best = bruteforce(actions, MAX_EXPENSE)
     print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
     cost = sum_total_cost(best)
@@ -55,5 +54,5 @@ if __name__ == "__main__":
         print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']}%")
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {round(profit, 2)}€ "
-          f"soit {round((profit/cost) - 1, 2) * 100}% "
+          f"soit {round((profit/cost) - 1, 4) * 100}% "
           f"soit {round(profit - cost, 2)}€")

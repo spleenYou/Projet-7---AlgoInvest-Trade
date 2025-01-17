@@ -42,8 +42,7 @@ def optimzed(actions, MAX_EXPENSE):
     for combination in combinations(actions, length_of_combination):
         cost = sum_total_cost(combination)
         if cost <= MAX_EXPENSE:
-            profit_cost = sum_total_profit(combination)
-            profit = profit_cost - cost
+            profit = sum_total_profit(combination) - cost
             if profit > best_profit:
                 best_profit = profit
                 best_combination = combination
@@ -62,5 +61,5 @@ if __name__ == "__main__":
     #     print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']}%")
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {round(profit, 2)}€ "
-          f"soit {round((profit/cost) - 1, 2) * 100}% "
+          f"soit {round((profit/cost) - 1, 4) * 100}% "
           f"soit {round(profit - cost, 2)}€")
