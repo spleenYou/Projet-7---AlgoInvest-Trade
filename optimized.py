@@ -9,7 +9,6 @@ def readFile():
         next(csv_file)
         csv_data = csv.reader(csv_file, delimiter=",")
         for data in csv_data:
-            int(data[1])
             tab.append({
                 "name": data[0],
                 "cost": int(data[1]),
@@ -28,14 +27,14 @@ def sum_total_profit(combination):
 
 def calcul_length_of_combination(actions, MAX_EXPENSE):
     total = 0
-    loop = 0
+    nb_of_combination = 0
     while total <= MAX_EXPENSE:
-        total += actions[loop]["cost"]
-        loop += 1
-    return loop - 1
+        total += actions[nb_of_combination]["cost"]
+        nb_of_combination += 1
+    return nb_of_combination - 1
 
 
-def bruteforce(actions, MAX_EXPENSE):
+def optimzed(actions, MAX_EXPENSE):
     actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
     length_of_combination = calcul_length_of_combination(actions, MAX_EXPENSE)
     bestProfit = 0
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     MAX_EXPENSE = 500
     start = time.time()
     actions = readFile()
-    best = bruteforce(actions, MAX_EXPENSE)
+    best = optimzed(actions, MAX_EXPENSE)
     print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
     cost = sum_total_cost(best)
     profit = sum_total_profit(best)
