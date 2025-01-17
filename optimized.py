@@ -27,27 +27,27 @@ def sum_total_profit(combination):
 
 def calcul_length_of_combination(actions, MAX_EXPENSE):
     total = 0
-    nb_of_combination = 0
+    nb_of_actions = 0
     while total <= MAX_EXPENSE:
-        total += actions[nb_of_combination]["cost"]
-        nb_of_combination += 1
-    return nb_of_combination - 1
+        total += actions[nb_of_actions]["cost"]
+        nb_of_actions += 1
+    return nb_of_actions - 1
 
 
 def optimzed(actions, MAX_EXPENSE):
     actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
     length_of_combination = calcul_length_of_combination(actions, MAX_EXPENSE)
-    bestProfit = 0
-    bestCombination = ()
+    best_profit = 0
+    best_combination = ()
     for combination in combinations(actions, length_of_combination):
         cost = sum_total_cost(combination)
         if cost <= MAX_EXPENSE:
-            profitCost = sum_total_profit(combination)
-            profit = profitCost - cost
-            if profit > bestProfit:
-                bestProfit = profit
-                bestCombination = combination
-    return bestCombination
+            profit_cost = sum_total_profit(combination)
+            profit = profit_cost - cost
+            if profit > best_profit:
+                best_profit = profit
+                best_combination = combination
+    return best_combination
 
 
 if __name__ == "__main__":
