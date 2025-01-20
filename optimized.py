@@ -34,7 +34,7 @@ def calcul_length_of_combination(actions, MAX_EXPENSE):
     return nb_of_actions - 1
 
 
-def optimzed(actions, MAX_EXPENSE):
+def optimized(actions, MAX_EXPENSE):
     actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
     length_of_combination = calcul_length_of_combination(actions, MAX_EXPENSE)
     best_profit = 0
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     MAX_EXPENSE = 500
     start = time.time()
     actions = readFile()
-    best = optimzed(actions, MAX_EXPENSE)
+    best = optimized(actions, MAX_EXPENSE)
     print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
     cost = sum_total_cost(best)
     profit = sum_total_profit(best)
