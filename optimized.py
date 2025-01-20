@@ -1,6 +1,8 @@
 import csv
 from itertools import combinations
 import time
+import psutil
+import os
 
 
 def readFile():
@@ -63,3 +65,10 @@ if __name__ == "__main__":
           f"pour un profit de {round(profit, 2)}€ "
           f"soit {round((profit/cost) - 1, 4) * 100}% "
           f"soit {round(profit - cost, 2)}€")
+    # Obtenir le processus actuel
+    process = psutil.Process(os.getpid())
+    # Obtenir l'utilisation de la mémoire en octets
+    memory_usage = process.memory_info().rss
+    # Convertir en mégaoctets pour une lecture plus facile
+    memory_usage_mb = memory_usage / 1024 / 1024
+    print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
