@@ -59,12 +59,11 @@ if __name__ == "__main__":
     print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
     cost = sum_total_cost(best)
     profit = sum_total_profit(best)
-    # for action in best:
-    #     print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']}%")
+    for action in best:
+        print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']}%")
     print(f"le cout total est de {cost}€ "
-          f"pour un profit de {round(profit, 2)}€ "
-          f"soit {round((profit/cost) - 1, 4) * 100}% "
-          f"soit {round(profit - cost, 2)}€")
+          f"pour un profit de {profit:.2f}€ "
+          f"soit {(profit/cost) * 100:.2f}%")
     # Obtenir le processus actuel
     process = psutil.Process(os.getpid())
     # Obtenir l'utilisation de la mémoire en octets
