@@ -56,7 +56,7 @@ if __name__ == "__main__":
     #     print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']}%")
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
-          f"soit {(profit/cost) * 100:.2f}%")
+          f"soit {((profit/cost - 1) * 100):.2f}%")
     # Obtenir le processus actuel
     process = psutil.Process(os.getpid())
     # Obtenir l'utilisation de la mémoire en octets
