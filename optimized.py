@@ -65,14 +65,13 @@ def optimized(MAX_EXPENSE, actions):
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)
     names = list(action["name"] for action in actions)
-
     # Find the number of actions
     n = len(costs)
     # Create a table in two dimensions : MAX_EXPENSE by number of actions
-    table = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(n + 1)]
+    table = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
 
     # Create a similar table but for action's name
-    selected_items = [[[] for _ in range(MAX_EXPENSE + 1)] for _ in range(n + 1)]
+    selected_items = [[[] for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
 
     # Fill tables
     for i in range(1, n + 1):
@@ -80,23 +79,26 @@ def optimized(MAX_EXPENSE, actions):
             # If cost can be included
             if costs[i-1] <= j:
                 # Get profit more profit in the previous dimension
-                new_profit = profits[i-1] + table[i-1][j-costs[i-1]]
+                new_profit = profits[i-1] + table[0][j-costs[i-1]]
                 # Get the previous profit
-                previous_profit = table[i-1][j]
+                previous_profit = table[0][j]
 
                 # Maximise profit and keep names
                 if new_profit > previous_profit:
-                    table[i][j] = new_profit
-                    selected_items[i][j] = selected_items[i-1][j-costs[i-1]] + [names[i-1]]
+                    table[1][j] = new_profit
+                    selected_items[1][j] = selected_items[0][j-costs[i-1]] + [names[i-1]]
                 else:
-                    table[i][j] = previous_profit
-                    selected_items[i][j] = selected_items[i-1][j]
+                    table[1][j] = previous_profit
+                    selected_items[1][j] = selected_items[0][j]
             else:
                 # If cost cannot be included
-                table[i][j] = table[i-1][j]
-                selected_items[i][j] = selected_items[i-1][j]
+                table[1][j] = table[0][j]
+                selected_items[1][j] = selected_items[0][j]
+        # Copy row 1 in row 0 for noth tables
+        table[0] = table[1].copy()
+        selected_items[0] = selected_items[1].copy()
     # Return the best combination (last case)
-    return selected_items[n][MAX_EXPENSE]
+    return selected_items[1][MAX_EXPENSE]
 
 
 if __name__ == "__main__":
