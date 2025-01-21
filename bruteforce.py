@@ -34,7 +34,7 @@ def execution_information(func):
         # Récupére le pid du process en cours
         process = psutil.Process(os.getpid())
 
-        memory_before = process.memory_full_info().rss
+        memory_before = process.memory_full_info().uss
 
         # Récupération de l'heure au démarrage
         start_time = time.time()
@@ -44,13 +44,13 @@ def execution_information(func):
         # Récupération de l'heure d'arrêt
         stop_time = time.time()
 
-        memory_after = process.memory_full_info().rss
+        memory_after = process.memory_full_info().uss
 
         # Ecriture du temps d'éxecution en milliseconde
         print(f"Temps d'éxecution : {(stop_time - start_time) * 1000:.2f}ms")
         # Convertir en mégaoctets pour une lecture plus facile
-        memory_usage_mb = (memory_after - memory_before) / 1024 / 1024
-        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
+        memory_usage_mb = (memory_after - memory_before) / 1024
+        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} KB")
         return result
     return wrapper
 
