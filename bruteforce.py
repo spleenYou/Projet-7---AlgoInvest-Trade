@@ -28,6 +28,24 @@ def sum_total_value_after_2_year(combination):
     return sum(action["value_after"] for action in combination)
 
 
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_full_info()
+    return mem_info.rss
+
+
+# decorator function
+def profile(func):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = func(*args, **kwargs)
+        mem_after = process_memory()
+        print(f"consumed memory: {(mem_after - mem_before)}")
+        return result
+    return wrapper
+
+
+@profile
 def bruteforce(actions, MAX_EXPENSE):
     tabLen = len(actions)
     best_profit = 0
@@ -60,7 +78,7 @@ if __name__ == "__main__":
     # Obtenir le processus actuel
     process = psutil.Process(os.getpid())
     # Obtenir l'utilisation de la mémoire en octets
-    memory_usage = process.memory_info().rss
+    memory_usage = process.memory_info().vms
     # Convertir en mégaoctets pour une lecture plus facile
     memory_usage_mb = memory_usage / 1024 / 1024
     print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
