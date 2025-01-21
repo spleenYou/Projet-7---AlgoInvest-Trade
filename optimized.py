@@ -18,35 +18,37 @@ def readFile():
     return tab
 
 
-# decorator function
 def execution_information(func):
     def wrapper(*args, **kwargs):
-        # Récupére le pid du process en cours
+        # Get the process pid
         process = psutil.Process(os.getpid())
 
+        # Get the USS memory before the function
         memory_before = process.memory_full_info().uss
 
-        # Récupération de l'heure au démarrage
+        # Get the time before the function
         start_time = time.time()
 
         result = func(*args, **kwargs)
 
-        # Récupération de l'heure d'arrêt
+        # Get the time after the function
         stop_time = time.time()
 
+        # Get the USS memory after the function
         memory_after = process.memory_full_info().uss
 
-        # Ecriture du temps d'éxecution en milliseconde
+        # Convert the execution time in ms
         print(f"Temps d'éxecution : {(stop_time - start_time) * 1000:.2f}ms")
-        # Convertir en mégaoctets pour une lecture plus facile
-        memory_usage_mb = (memory_after - memory_before) / 1024 / 1024
-        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
+
+        # Convert the use memory in KB
+        memory_usage_mb = (memory_after - memory_before) / 1024
+        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} KB")
         return result
     return wrapper
 
 
 @execution_information
-def knapSack(MAX_EXPENSE, actions):
+def optimized(MAX_EXPENSE, actions):
     # Création des tableaux de valeurs
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)
@@ -90,7 +92,7 @@ if __name__ == "__main__":
     # Lecture du fichier
     actions = readFile()
     # Recherche de la liste la plus rentable
-    items_selected = knapSack(MAX_EXPENSE, actions)
+    items_selected = optimized(MAX_EXPENSE, actions)
     # Calcul du cout total
     cost = sum(action["cost"] for action in actions if action["name"] in items_selected)
     # Calcul du profit
