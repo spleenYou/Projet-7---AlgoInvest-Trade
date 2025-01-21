@@ -4,11 +4,22 @@ import psutil
 import os
 
 
-def readFile():
+def readFile(filename):
+    """
+    Read the csv file with all actions
+
+    Args:
+        filename (str): Name of the csv file
+    Returns:
+        tab (list) : List of all actions
+    """
     tab = []
-    with open("data/Liste actions.csv") as csv_file:
+    with open(f"data/{filename}.csv") as csv_file:
+        # Skip the first line (name of the column)
         next(csv_file)
+        # Read the rest of the csv_file delimit by ','
         csv_data = csv.reader(csv_file, delimiter=",")
+        # Create a list of dicts
         for data in csv_data:
             tab.append({
                 "name": data[0],
@@ -19,6 +30,7 @@ def readFile():
 
 
 def execution_information(func):
+    "Decorative function for obtaining information about execution"
     def wrapper(*args, **kwargs):
         # Get the process pid
         process = psutil.Process(os.getpid())
@@ -49,54 +61,60 @@ def execution_information(func):
 
 @execution_information
 def optimized(MAX_EXPENSE, actions):
-    # Création des tableaux de valeurs
+    # Dispatch actions's dict in list
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)
     names = list(action["name"] for action in actions)
 
+    # Find the number of actions
     n = len(costs)
-    # Création de la table pour stocker les profits maximaux
+    # Create a table in two dimensions : MAX_EXPENSE by number of actions
     table = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(n + 1)]
 
-    # Création d'une table pour suivre les éléments sélectionnés
+    # Create a similar table but for action's name
     selected_items = [[[] for _ in range(MAX_EXPENSE + 1)] for _ in range(n + 1)]
 
-    # Remplissage de la table
+    # Fill tables
     for i in range(1, n + 1):
         for j in range(1, MAX_EXPENSE + 1):
+            # If cost can be included
             if costs[i-1] <= j:
-                # Calcul du profit si on inclut l'élément actuel
+                # Get profit more profit in the previous dimension
                 new_profit = profits[i-1] + table[i-1][j-costs[i-1]]
-                old_profit = table[i-1][j]
+                # Get the previous profit
+                previous_profit = table[i-1][j]
 
-                # Maximiser le profit et enregistrer les noms correspondants
-                if new_profit > old_profit:
+                # Maximise profit and keep names
+                if new_profit > previous_profit:
                     table[i][j] = new_profit
                     selected_items[i][j] = selected_items[i-1][j-costs[i-1]] + [names[i-1]]
                 else:
-                    table[i][j] = old_profit
+                    table[i][j] = previous_profit
                     selected_items[i][j] = selected_items[i-1][j]
             else:
-                # Si l'élément ne peut pas être inclus
+                # If cost cannot be included
                 table[i][j] = table[i-1][j]
                 selected_items[i][j] = selected_items[i-1][j]
-    # Les éléments sélectionnés sont dans selected_items[n][MAX_EXPENSE]
-    items_selected = selected_items[n][MAX_EXPENSE]
-
-    return items_selected
+    # Return the best combination (last case)
+    return selected_items[n][MAX_EXPENSE]
 
 
 if __name__ == "__main__":
-    # Dépense maximum pour le client
+    # Spending limit
     MAX_EXPENSE = 500
-    # Lecture du fichier
-    actions = readFile()
-    # Recherche de la liste la plus rentable
-    items_selected = optimized(MAX_EXPENSE, actions)
-    # Calcul du cout total
-    cost = sum(action["cost"] for action in actions if action["name"] in items_selected)
-    profit = sum(action["profit"] for action in actions if action["name"] in items_selected)
-    # Ecriture de la finalité
+    # Read the file
+    actions = readFile("Liste actions")
+    # Find the best combination
+    best_combination = optimized(MAX_EXPENSE, actions)
+    # Show actions details
+    cost = 0
+    profit = 0
+    for action in actions:
+        if action["name"] in best_combination:
+            cost += action["cost"]
+            profit += action["profit"]
+            print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']:.2f}%")
+    # Show the total
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
           f"soit {(profit/cost) * 100:.2f}%")
