@@ -28,25 +28,43 @@ def sum_total_value_after_2_year(combination):
     return sum(action["value_after"] for action in combination)
 
 
-# decorator function
-def profile(func):
+# fonction de décoration
+def execution_information(func):
     def wrapper(*args, **kwargs):
+        # Récupére le pid du process en cours
         process = psutil.Process(os.getpid())
-        mem_before = process.memory_full_info().rss
+
+        memory_before = process.memory_full_info().rss
+
+        # Récupération de l'heure au démarrage
+        start_time = time.time()
+
         result = func(*args, **kwargs)
-        mem_after = process.memory_full_info().rss
-        print(f"consumed memory 1: {(mem_after - mem_before)/1024/1024}")
+
+        # Récupération de l'heure d'arrêt
+        stop_time = time.time()
+
+        memory_after = process.memory_full_info().rss
+
+        # Ecriture du temps d'éxecution en milliseconde
+        print(f"Temps d'éxecution : {(stop_time - start_time) * 1000:.2f}ms")
+        # Convertir en mégaoctets pour une lecture plus facile
+        memory_usage_mb = (memory_after - memory_before) / 1024 / 1024
+        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
         return result
     return wrapper
 
 
-@profile
+@execution_information
 def bruteforce(actions, MAX_EXPENSE):
-    tabLen = len(actions)
     best_profit = 0
     best_combination = ()
-    for r in range(1, tabLen):
-        for combination in combinations(actions, r):
+
+    # Calcul du nombre d'actions
+    tabLen = len(actions)
+    # Calcul du meilleur profit pour chaque combinaisons d'actions de l longueur
+    for length in range(1, tabLen):
+        for combination in combinations(actions, length):
             cost = sum_total_cost(combination)
             if cost <= MAX_EXPENSE:
                 value = sum_total_value_after_2_year(combination)
@@ -58,22 +76,20 @@ def bruteforce(actions, MAX_EXPENSE):
 
 
 if __name__ == "__main__":
+    # Dépense maximum pour le client
     MAX_EXPENSE = 500
-    # Obtenir le processus actuel
-    process = psutil.Process(os.getpid())
-    start = time.time()
+    # Lecture du fichier
     actions = readFile()
-    best = bruteforce(actions, MAX_EXPENSE)
-    print(f"Temps d'éxecution : {round(time.time() - start, 2)}")
-    cost = sum_total_cost(best)
-    profit = sum_total_value_after_2_year(best)
-    # for action in best:
-    #     print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']}%")
+    # Calcul de la meilleure combinaison
+    best_combination = bruteforce(actions, MAX_EXPENSE)
+    # Calcul du cout
+    cost = sum_total_cost(best_combination)
+    # Calcul du profit
+    profit = sum_total_value_after_2_year(best_combination)
+    # Affichage des actions à acheter
+    for action in best_combination:
+        print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']:.2f}%")
+    # Affichage du global
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
           f"soit {((profit/cost - 1) * 100):.2f}%")
-    # Obtenir l'utilisation de la mémoire en octets
-    memory_usage = process.memory_info().rss
-    # Convertir en mégaoctets pour une lecture plus facile
-    memory_usage_mb = memory_usage / 1024 / 1024
-    print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")
