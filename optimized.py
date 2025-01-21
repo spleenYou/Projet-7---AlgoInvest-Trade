@@ -95,7 +95,6 @@ if __name__ == "__main__":
     items_selected = optimized(MAX_EXPENSE, actions)
     # Calcul du cout total
     cost = sum(action["cost"] for action in actions if action["name"] in items_selected)
-    # Calcul du profit
     profit = sum(action["profit"] for action in actions if action["name"] in items_selected)
     # Ecriture de la finalité
     print(f"le cout total est de {cost}€ "

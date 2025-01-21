@@ -14,13 +14,14 @@ def readFile(filename):
     Returns:
         tab (list) : List of all actions
     """
-
     tab = []
     with open(f"data/{filename}.csv") as csv_file:
+        # Skip the first line (name of the column)
         next(csv_file)
+        # Read the rest of the csv_file delimit by ','
         csv_data = csv.reader(csv_file, delimiter=",")
+        # Create a list of dicts
         for data in csv_data:
-            int(data[1])
             tab.append({
                 "name": data[0],
                 "cost": int(data[1]),
@@ -31,13 +32,11 @@ def readFile(filename):
 
 def sum_total_cost(combination):
     "Return the sum of the cost of all actions in combination"
-
     return sum(action["cost"] for action in combination)
 
 
 def sum_total_value_after_2_year(combination):
     "Return the sum of the value after 2 years of all actions in combination"
-
     return sum(action["value_after"] for action in combination)
 
 
@@ -86,9 +85,9 @@ def bruteforce(actions, MAX_EXPENSE):
     best_profit = 0
     best_combination = ()
 
-    # Calcul du nombre d'actions
+    # Get the number of actions
     tabLen = len(actions)
-    # Calcul du meilleur profit pour chaque combinaisons d'actions de l longueur
+    # Calculation of the profit for each combination of all length
     for length in range(1, tabLen):
         for combination in combinations(actions, length):
             cost = sum_total_cost(combination)
@@ -98,25 +97,24 @@ def bruteforce(actions, MAX_EXPENSE):
                 if profit > best_profit:
                     best_profit = profit
                     best_combination = combination
-    print(type(best_combination))
     return best_combination
 
 
 if __name__ == "__main__":
-    # Dépense maximum pour le client
+    # Spending limit
     MAX_EXPENSE = 500
-    # Lecture du fichier
+    # Read the file
     actions = readFile("Liste actions")
-    # Calcul de la meilleure combinaison
+    # Find the best combination
     best_combination = bruteforce(actions, MAX_EXPENSE)
-    # Calcul du cout
+    # Cost calculation
     cost = sum_total_cost(best_combination)
-    # Calcul du profit
+    # Profit calculation
     profit = sum_total_value_after_2_year(best_combination)
-    # Affichage des actions à acheter
+    # Show all actions in best combination
     for action in best_combination:
         print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']:.2f}%")
-    # Affichage du global
+    # Show the total
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
           f"soit {((profit/cost - 1) * 100):.2f}%")
