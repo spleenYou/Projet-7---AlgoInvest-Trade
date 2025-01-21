@@ -28,19 +28,14 @@ def sum_total_value_after_2_year(combination):
     return sum(action["value_after"] for action in combination)
 
 
-def process_memory():
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_full_info()
-    return mem_info.rss
-
-
 # decorator function
 def profile(func):
     def wrapper(*args, **kwargs):
-        mem_before = process_memory()
+        process = psutil.Process(os.getpid())
+        mem_before = process.memory_full_info().rss
         result = func(*args, **kwargs)
-        mem_after = process_memory()
-        print(f"consumed memory: {(mem_after - mem_before)}")
+        mem_after = process.memory_full_info().rss
+        print(f"consumed memory 1: {(mem_after - mem_before)/1024/1024}")
         return result
     return wrapper
 
@@ -64,6 +59,8 @@ def bruteforce(actions, MAX_EXPENSE):
 
 if __name__ == "__main__":
     MAX_EXPENSE = 500
+    # Obtenir le processus actuel
+    process = psutil.Process(os.getpid())
     start = time.time()
     actions = readFile()
     best = bruteforce(actions, MAX_EXPENSE)
@@ -75,10 +72,8 @@ if __name__ == "__main__":
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
           f"soit {((profit/cost - 1) * 100):.2f}%")
-    # Obtenir le processus actuel
-    process = psutil.Process(os.getpid())
     # Obtenir l'utilisation de la mémoire en octets
-    memory_usage = process.memory_info().vms
+    memory_usage = process.memory_info().rss
     # Convertir en mégaoctets pour une lecture plus facile
     memory_usage_mb = memory_usage / 1024 / 1024
     print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} MB")

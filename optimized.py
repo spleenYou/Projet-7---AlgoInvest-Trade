@@ -5,17 +5,11 @@ import os
 
 
 def readFile():
-    # tab = {"name": [],
-    #        "cost": [],
-    #        "profit": []}
     tab = []
     with open("data/Liste actions.csv") as csv_file:
         next(csv_file)
         csv_data = csv.reader(csv_file, delimiter=",")
         for data in csv_data:
-            # tab["name"].append(data[0])
-            # tab["cost"].append(int(data[1])),
-            # tab["profit"].append(tab["cost"][-1] * (1 + int(data[2].replace("%", ""))/100))
             tab.append({
                 "name": data[0],
                 "cost": int(data[1]),
@@ -24,27 +18,20 @@ def readFile():
     return tab
 
 
-def process_memory():
-    print(psutil.Process(os.getpid()).memory_full_info())
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_full_info()
-    return mem_info.rss
-
-
 # decorator function
 def profile(func):
     def wrapper(*args, **kwargs):
-        mem_before = process_memory()
+        process = psutil.Process(os.getpid())
+        mem_before = process.memory_full_info().rss
         result = func(*args, **kwargs)
-        mem_after = process_memory()
-        print(f"consumed memory: {(mem_after - mem_before)}")
+        mem_after = process.memory_full_info().rss
+        print(f"consumed memory 1: {(mem_after - mem_before)/1024/1024}")
         return result
     return wrapper
 
 
 @profile
 def knapSack(MAX_EXPENSE, actions):
-
     # Création des tableaux de valeurs
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)
