@@ -61,6 +61,16 @@ def execution_information(func):
 
 @execution_information
 def optimized(MAX_EXPENSE, actions):
+    """
+    Find the best combination with a solution based on knapsack solution
+
+    Args:
+        actions (list): list of all actions
+        MAX_EXPENSE (int): Maximum amount to spend
+
+    Returns:
+        best_combination (tuple): combination with the best profit
+    """
     # Dispatch actions's dict in list
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)

@@ -76,7 +76,8 @@ def bruteforce(actions, MAX_EXPENSE):
     Find the best combination in bruteforce way by check the profit makes for all combinations
 
     Args:
-        actions (list): list of all actions (dict)
+        actions (list): list of all actions
+        MAX_EXPENSE (int): Maximum amount to spend
 
     Returns:
         best_combination (tuple): combination with the best profit
