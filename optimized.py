@@ -78,7 +78,7 @@ def optimized(MAX_EXPENSE, actions):
     # Find the number of actions
     n = len(costs)
     # Create a table in two dimensions : MAX_EXPENSE by number of actions
-    table = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
+    profits_items = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
 
     # Create a similar table but for action's name
     selected_items = [[[] for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
@@ -89,23 +89,23 @@ def optimized(MAX_EXPENSE, actions):
             # If cost can be included
             if costs[i-1] <= j:
                 # Get profit more profit in the previous dimension
-                new_profit = profits[i-1] + table[0][j-costs[i-1]]
+                new_profit = profits[i-1] + profits_items[0][j-costs[i-1]]
                 # Get the previous profit
-                previous_profit = table[0][j]
+                previous_profit = profits_items[0][j]
 
                 # Maximise profit and keep names
                 if new_profit > previous_profit:
-                    table[1][j] = new_profit
+                    profits_items[1][j] = new_profit
                     selected_items[1][j] = selected_items[0][j-costs[i-1]] + [names[i-1]]
                 else:
-                    table[1][j] = previous_profit
+                    profits_items[1][j] = previous_profit
                     selected_items[1][j] = selected_items[0][j]
             else:
                 # If cost cannot be included
-                table[1][j] = table[0][j]
+                profits_items[1][j] = profits_items[0][j]
                 selected_items[1][j] = selected_items[0][j]
         # Copy row 1 in row 0 for noth tables
-        table[0] = table[1].copy()
+        profits_items[0] = profits_items[1].copy()
         selected_items[0] = selected_items[1].copy()
     # Return the best combination (last case)
     return selected_items[1][MAX_EXPENSE]
