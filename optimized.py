@@ -21,11 +21,13 @@ def readFile(filename):
         csv_data = csv.reader(csv_file, delimiter=",")
         # Create a list of dicts
         for data in csv_data:
-            tab.append({
-                "name": data[0],
-                "cost": int(data[1]),
-                "profit": int(data[1]) * (1 + int(data[2].replace("%", ""))/100) - int(data[1])
-            })
+            cost = float(data[1]) * 100
+            if cost > 0:
+                tab.append({
+                    "name": data[0],
+                    "cost": int(cost),
+                    "profit": (cost * (1 + float(data[2].replace("%", ""))/100) - cost)/100
+                })
     return tab
 
 
@@ -71,12 +73,15 @@ def optimized(MAX_EXPENSE, actions):
     Returns:
         best_combination (tuple): combination with the best profit
     """
+
+    # actions = list(action for action in actions if action["profit"] > 0)
     # Dispatch actions's dict in list
     costs = list(action["cost"] for action in actions)
     profits = list(action["profit"] for action in actions)
     names = list(action["name"] for action in actions)
     # Find the number of actions
     n = len(costs)
+    MAX_EXPENSE = MAX_EXPENSE * 100
     # Create a table in two dimensions : MAX_EXPENSE by number of actions
     profits_items = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
 
@@ -115,7 +120,7 @@ if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
     # Read the file
-    actions = readFile("Liste actions")
+    actions = readFile("dataset2")
     # Find the best combination
     best_combination = optimized(MAX_EXPENSE, actions)
     # Show actions details
@@ -123,9 +128,9 @@ if __name__ == "__main__":
     profit = 0
     for action in actions:
         if action["name"] in best_combination:
-            cost += action["cost"]
+            cost += action["cost"] / 100
             profit += action["profit"]
-            print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']:.2f}%")
+            print(f"{action['name']} pour un prix de {action['cost'] / 100}€ avec un profit de {action['profit']:.2f}%")
     # Show the total
     print(f"le cout total est de {cost}€ "
           f"pour un profit de {profit:.2f}€ "
