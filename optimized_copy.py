@@ -66,9 +66,10 @@ def somme(item, tab):
 
 
 def sac_a_dos(poids_max, actions, result):
-    n = len(actions) - 1
+    n = len(actions)
     if n == 0:
         return result
+    n -= 1
     tab = result[0][n + 1].copy()
     tab.append(actions.pop())
     rent1 = somme("profit", tab)
@@ -104,7 +105,7 @@ def optimized(MAX_EXPENSE, actions):
     while tab[0] != tab[1]:
         tab[0] = tab[1].copy()
         tab = sac_a_dos(MAX_EXPENSE, actions.copy(), tab)
-    return tab[1][1]
+    return tab[1][0]
 
 
 if __name__ == "__main__":
