@@ -21,12 +21,12 @@ def readFile(filename):
         csv_data = csv.reader(csv_file, delimiter=",")
         # Create a list of dicts
         for data in csv_data:
-            cost = float(data[1]) * 100
-            if cost > 0:
+            cost = float(data[1])
+            if cost >= 1:
                 tab.append({
                     "name": data[0],
-                    "cost": int(cost),
-                    "profit": (cost * (1 + float(data[2].replace("%", ""))/100) - cost)/100
+                    "cost": cost,
+                    "profit": cost * (1 + float(data[2].replace("%", ""))/100)
                 })
     return tab
 
@@ -61,6 +61,25 @@ def execution_information(func):
     return wrapper
 
 
+def somme(item, tab):
+    return float(sum(x[item] for x in tab if x["name"] is not None))
+
+
+def sac_a_dos(MAX_EXPENSE, actions, list_actions):
+    n = len(actions)
+    if n == 0:
+        return list_actions
+    liste1 = list_actions.copy()
+    liste1.append(actions.pop())
+    profit_with_x = somme("profit", liste1)
+    profit = somme("profit", list_actions)
+    if profit_with_x > profit:
+        cost = somme("cost", liste1)
+        if cost <= MAX_EXPENSE:
+            list_actions = liste1.copy()
+    return sac_a_dos(MAX_EXPENSE, actions, list_actions)
+
+
 @execution_information
 def optimized(MAX_EXPENSE, actions):
     """
@@ -73,65 +92,30 @@ def optimized(MAX_EXPENSE, actions):
     Returns:
         best_combination (tuple): combination with the best profit
     """
-
-    # actions = list(action for action in actions if action["profit"] > 0)
-    # Dispatch actions's dict in list
-    costs = list(action["cost"] for action in actions)
-    profits = list(action["profit"] for action in actions)
-    names = list(action["name"] for action in actions)
     # Find the number of actions
-    n = len(costs)
-    MAX_EXPENSE = MAX_EXPENSE * 100
-    # Create a table in two dimensions : MAX_EXPENSE by number of actions
-    profits_items = [[0 for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
-
-    # Create a similar table but for action's name
-    selected_items = [[[] for _ in range(MAX_EXPENSE + 1)] for _ in range(2)]
-
-    # Fill tables
-    for i in range(1, n + 1):
-        for j in range(1, MAX_EXPENSE + 1):
-            # If cost can be included
-            if costs[i-1] <= j:
-                # Get profit more profit in the previous dimension
-                new_profit = profits[i-1] + profits_items[0][j-costs[i-1]]
-                # Get the previous profit
-                previous_profit = profits_items[0][j]
-
-                # Maximise profit and keep names
-                if new_profit > previous_profit:
-                    profits_items[1][j] = new_profit
-                    selected_items[1][j] = selected_items[0][j-costs[i-1]] + [names[i-1]]
-                else:
-                    profits_items[1][j] = previous_profit
-                    selected_items[1][j] = selected_items[0][j]
-            else:
-                # If cost cannot be included
-                profits_items[1][j] = profits_items[0][j]
-                selected_items[1][j] = selected_items[0][j]
-        # Copy row 1 in row 0 for noth tables
-        profits_items[0] = profits_items[1].copy()
-        selected_items[0] = selected_items[1].copy()
-    # Return the best combination (last case)
-    return selected_items[1][MAX_EXPENSE]
+    actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
+    list0 = [{"name": None, "cost": 0, "profit": 0}]
+    list1 = [{"name": None, "cost": 1, "profit": 0}]
+    while list0 != list1:
+        list0 = list1.copy()
+        list1 = sac_a_dos(MAX_EXPENSE, actions.copy(), list0)
+    return list1
 
 
 if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
     # Read the file
-    actions = readFile("dataset2")
+    tab_actions = readFile("dataset2")
     # Find the best combination
-    best_combination = optimized(MAX_EXPENSE, actions)
+    best_combination = optimized(MAX_EXPENSE, tab_actions)
     # Show actions details
-    cost = 0
-    profit = 0
-    for action in actions:
-        if action["name"] in best_combination:
-            cost += action["cost"] / 100
-            profit += action["profit"]
-            print(f"{action['name']} pour un prix de {action['cost'] / 100}€ avec un profit de {action['profit']:.2f}%")
+    for action in best_combination:
+        if action["name"] is not None:
+            print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']:.2f}€")
     # Show the total
-    print(f"le cout total est de {cost}€ "
-          f"pour un profit de {profit:.2f}€ "
-          f"soit {(profit/cost) * 100:.2f}%")
+    cost = somme("cost", best_combination)
+    profit = somme("profit", best_combination)
+    print(f"le cout total est de {cost:.2f}€ "
+          f"pour un profit de {profit-cost:.2f}€ "
+          f"soit {((profit/cost) - 1) * 100:.2f}%")
