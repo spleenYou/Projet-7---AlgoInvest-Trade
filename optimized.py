@@ -2,6 +2,8 @@ import csv
 import time
 import psutil
 import os
+from rich.table import Table
+from rich.console import Console
 
 
 def readFile(filename):
@@ -22,7 +24,7 @@ def readFile(filename):
         # Create a list of dicts
         for data in csv_data:
             cost = float(data[1])
-            if cost >= 1:
+            if cost > 0:
                 tab.append({
                     "name": data[0],
                     "cost": cost,
@@ -61,6 +63,17 @@ def execution_information(func):
     return wrapper
 
 
+def show_information(filename, actions, list_actions):
+    console = Console()
+    table = Table(title=f"Fichier : {filename}.csv", show_lines=True)
+    table.add_column("Nom de l'action", justify="center")
+    table.add_column("Prix", justify="center")
+    table.add_column("Profit", justify="center")
+    table.add_column("Ratio")
+
+    console.print(table)
+
+
 def somme(item, tab):
     return float(sum(x[item] for x in tab if x["name"] is not None))
 
@@ -69,14 +82,16 @@ def sac_a_dos(MAX_EXPENSE, actions, list_actions):
     n = len(actions)
     if n == 0:
         return list_actions
-    liste1 = list_actions.copy()
-    liste1.append(actions.pop())
-    profit_with_x = somme("profit", liste1)
-    profit = somme("profit", list_actions)
-    if profit_with_x > profit:
-        cost = somme("cost", liste1)
-        if cost <= MAX_EXPENSE:
-            list_actions = liste1.copy()
+    new_action = actions.pop()
+    if new_action not in list_actions:
+        liste1 = list_actions.copy()
+        liste1.append(new_action)
+        profit_with_x = somme("profit", liste1)
+        profit = somme("profit", list_actions)
+        if profit_with_x > profit:
+            cost = somme("cost", liste1)
+            if cost <= MAX_EXPENSE:
+                list_actions = liste1.copy()
     return sac_a_dos(MAX_EXPENSE, actions, list_actions)
 
 
@@ -94,8 +109,8 @@ def optimized(MAX_EXPENSE, actions):
     """
     # Find the number of actions
     actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
-    list0 = [{"name": None, "cost": 0, "profit": 0}]
-    list1 = [{"name": None, "cost": 1, "profit": 0}]
+    list0 = []
+    list1 = [{"name": "", "cost": -1, "profit": -1}]
     while list0 != list1:
         list0 = list1.copy()
         list1 = sac_a_dos(MAX_EXPENSE, actions.copy(), list0)
@@ -106,16 +121,16 @@ if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
     # Read the file
-    tab_actions = readFile("dataset2")
+    tab_actions = readFile("dataset0")
     # Find the best combination
     best_combination = optimized(MAX_EXPENSE, tab_actions)
     # Show actions details
     for action in best_combination:
-        if action["name"] is not None:
+        if action["name"] != "":
             print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']:.2f}€")
     # Show the total
     cost = somme("cost", best_combination)
     profit = somme("profit", best_combination)
     print(f"le cout total est de {cost:.2f}€ "
-          f"pour un profit de {profit-cost:.2f}€ "
+          f"pour un profit de {profit-cost:.2f}€"
           f"soit {((profit/cost) - 1) * 100:.2f}%")
