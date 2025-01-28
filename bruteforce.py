@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
     # Read the file
-    actions = readFile("Liste actions")
+    actions = readFile("dataset0")
     # Find the best combination
     best_combination = bruteforce(actions, MAX_EXPENSE)
     # Cost calculation
@@ -117,5 +117,5 @@ if __name__ == "__main__":
         print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['value_after']:.2f}%")
     # Show the total
     print(f"le cout total est de {cost}€ "
-          f"pour un profit de {profit:.2f}€ "
+          f"pour un profit de {(profit - cost):.2f}€ "
           f"soit {((profit/cost - 1) * 100):.2f}%")

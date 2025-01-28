@@ -65,24 +65,24 @@ def somme(item, tab):
     return float(sum(x[item] for x in tab if x["name"] is not None))
 
 
-def sac_a_dos(poids_max, actions, result):
+def sac_a_dos(MAX_EXPENSE, actions, result):
     n = len(actions)
     if n == 0:
         return result
     n -= 1
     tab = result[0][n + 1].copy()
     tab.append(actions.pop())
-    rent1 = somme("profit", tab)
-    rent2 = somme("profit", result[1][n + 1])
-    if rent1 > rent2:
+    profit_with_x = somme("profit", tab)
+    profit = somme("profit", result[1][n + 1])
+    if profit_with_x > profit:
         cost = somme("cost", tab)
-        if cost <= poids_max:
+        if cost <= MAX_EXPENSE:
             result[1][n] = tab
         else:
-            result[1][n] = result[1][n + 1].copy()
+            result[1][n] = result[1][n + 1]
     else:
         result[1][n] = result[1][n + 1]
-    return sac_a_dos(poids_max, actions, result)
+    return sac_a_dos(MAX_EXPENSE, actions, result)
 
 
 @execution_information
@@ -99,7 +99,7 @@ def optimized(MAX_EXPENSE, actions):
     """
     # Find the number of actions
     n = len(actions)
-    actions = sorted(actions, key=lambda x: x["cost"]/x["profit"], reverse=True)
+    actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
     tab = [[[{"name": None, "cost": 0, "profit": 0}] for _ in range(n + 1)] for _ in range(2)]
     tab[1][0][0]["cost"] = 1
     while tab[0] != tab[1]:
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
     # Read the file
-    tab_actions = readFile("dataset2")
+    tab_actions = readFile("dataset0")
     # Find the best combination
     best_combination = optimized(MAX_EXPENSE, tab_actions)
     # Show actions details
