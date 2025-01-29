@@ -28,7 +28,7 @@ def readFile(filename):
                 tab.append({
                     "name": data[0],
                     "cost": cost,
-                    "profit": cost * (1 + float(data[2].replace("%", ""))/100)
+                    "profit": float(data[2].replace("%", ""))
                 })
     return tab
 
@@ -63,19 +63,45 @@ def execution_information(func):
     return wrapper
 
 
-def show_information(filename, actions, list_actions):
+def clear_screen():
+    "Clean the console for all os"
+    command = "clear"
+    if os.name in ("nt", "dos"):
+        command = "cls"
+    os.system(command)
+
+
+def show_information(filename, actions, best_combination):
     console = Console()
+    costs = somme("cost", best_combination)
+    profits = 0
+
     table = Table(title=f"Fichier : {filename}.csv", show_lines=True)
     table.add_column("Nom de l'action", justify="center")
     table.add_column("Prix", justify="center")
     table.add_column("Profit", justify="center")
-    table.add_column("Ratio")
+    table.add_column("Ratio", justify="center")
+
+    for action in best_combination:
+        if action["name"] != "":
+            profit = action['cost'] * (1 + (action['profit'])/100)
+            cost = action['cost']
+            profits += profit
+            table.add_row(action['name'],
+                          f"{cost}€",
+                          f"{profit - cost:.2f}€",
+                          f"{action['profit']:.2f}%")
+
+    table.add_row("[bold]Total",
+                  f"[bold]{costs:.2f}€",
+                  f"[bold]{profits - costs:.2f}€",
+                  f"[bold]{((profits/costs) - 1) * 100:.2f}%")
 
     console.print(table)
 
 
 def somme(item, tab):
-    return float(sum(x[item] for x in tab if x["name"] is not None))
+    return float(sum(x[item] for x in tab))
 
 
 def sac_a_dos(MAX_EXPENSE, actions, list_actions):
@@ -108,9 +134,9 @@ def optimized(MAX_EXPENSE, actions):
         best_combination (tuple): combination with the best profit
     """
     # Find the number of actions
-    actions = sorted(actions, key=lambda x: x["profit"]/x["cost"])
+    actions = sorted(actions, key=lambda x: x["profit"])
     list0 = []
-    list1 = [{"name": "", "cost": -1, "profit": -1}]
+    list1 = [{"name": "", "cost": 0, "profit": 0}]
     while list0 != list1:
         list0 = list1.copy()
         list1 = sac_a_dos(MAX_EXPENSE, actions.copy(), list0)
@@ -120,17 +146,18 @@ def optimized(MAX_EXPENSE, actions):
 if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
-    # Read the file
-    tab_actions = readFile("dataset0")
-    # Find the best combination
-    best_combination = optimized(MAX_EXPENSE, tab_actions)
-    # Show actions details
-    for action in best_combination:
-        if action["name"] != "":
-            print(f"{action['name']} pour un prix de {action['cost']}€ avec un profit de {action['profit']:.2f}€")
-    # Show the total
-    cost = somme("cost", best_combination)
-    profit = somme("profit", best_combination)
-    print(f"le cout total est de {cost:.2f}€ "
-          f"pour un profit de {profit-cost:.2f}€"
-          f"soit {((profit/cost) - 1) * 100:.2f}%")
+    filenames = ["dataset0", "dataset1", "dataset2"]
+    stop = False
+    while not stop:
+        choice = input("Quel jeu de valeurs souhaitez-vous tester ? (0 ou 1 ou 2) (stop pour arrêter) ")
+        clear_screen()
+        if choice in ["0", "1", "2"]:
+            filename = filenames[int(choice)]
+            # Read the file
+            actions = readFile(filename)
+            # Find the best combination
+            best_combination = optimized(MAX_EXPENSE, actions)
+            # Show information on screen
+            show_information(filename, actions, best_combination)
+        elif choice == "stop":
+            stop = True
