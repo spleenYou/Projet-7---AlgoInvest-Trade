@@ -73,8 +73,8 @@ def clear_screen():
 
 def show_information(filename, actions, best_combination):
     console = Console()
-    costs = somme("cost", best_combination)
-    profits = 0
+    costs = cal_cost(best_combination)
+    profits = cal_profit(best_combination)
 
     table = Table(title=f"Fichier : {filename}.csv", show_lines=True)
     table.add_column("Nom de l'action", justify="center")
@@ -84,9 +84,8 @@ def show_information(filename, actions, best_combination):
 
     for action in best_combination:
         if action["name"] != "":
-            profit = action['cost'] * (1 + (action['profit'])/100)
             cost = action['cost']
-            profits += profit
+            profit = cost * (1 + (action['profit'])/100)
             table.add_row(action['name'],
                           f"{cost}€",
                           f"{profit - cost:.2f}€",
@@ -100,8 +99,14 @@ def show_information(filename, actions, best_combination):
     console.print(table)
 
 
-def somme(item, tab):
-    return float(sum(x[item] for x in tab))
+def cal_profit(tab):
+    if isinstance(tab, int):
+        return 0
+    return float(sum(action["cost"] * (1 + action["profit"]/100) for action in tab))
+
+
+def cal_cost(tab):
+    return float(sum(x["cost"] for x in tab))
 
 
 def sac_a_dos(MAX_EXPENSE, actions, list_actions):
@@ -112,10 +117,10 @@ def sac_a_dos(MAX_EXPENSE, actions, list_actions):
     if new_action not in list_actions:
         liste1 = list_actions.copy()
         liste1.append(new_action)
-        profit_with_x = somme("profit", liste1)
-        profit = somme("profit", list_actions)
+        profit_with_x = cal_profit(liste1)
+        profit = cal_profit(list_actions)
         if profit_with_x > profit:
-            cost = somme("cost", liste1)
+            cost = cal_cost(liste1)
             if cost <= MAX_EXPENSE:
                 list_actions = liste1.copy()
     return sac_a_dos(MAX_EXPENSE, actions, list_actions)
@@ -134,7 +139,7 @@ def optimized(MAX_EXPENSE, actions):
         best_combination (tuple): combination with the best profit
     """
     # Find the number of actions
-    actions = sorted(actions, key=lambda x: x["profit"])
+    actions = sorted(actions, key=lambda x: cal_profit([x])/x["cost"])
     list0 = []
     list1 = [{"name": "", "cost": 0, "profit": 0}]
     while list0 != list1:
