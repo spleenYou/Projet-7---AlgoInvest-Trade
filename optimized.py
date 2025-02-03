@@ -53,12 +53,18 @@ def execution_information(func):
         # Get the USS memory after the function
         memory_after = process.memory_full_info().uss
 
-        # Convert the execution time in ms
-        print(f"Temps d'éxecution : {(stop_time - start_time) * 1000:.2f}ms")
-
         # Convert the use memory in KB
         memory_usage_mb = (memory_after - memory_before) / 1024
-        print(f"Utilisation de la mémoire : {memory_usage_mb:.2f} KB")
+        # Convert the execution time in ms
+        exectution_time = (stop_time - start_time) * 1000
+
+        # Table creation to shgow information
+        console = Console()
+        table = Table(title="Informations d'execution", show_lines=True)
+        table.add_column("Temps (ms)", justify="center")
+        table.add_column("Mémoire utilisée", justify="center")
+        table.add_row(f"{exectution_time:.2f}ms", f"{memory_usage_mb:.2f} KB")
+        console.print(table)
         return result
     return wrapper
 
@@ -71,11 +77,21 @@ def clear_screen():
     os.system(command)
 
 
-def show_information(filename, actions, best_combination):
-    console = Console()
-    costs = cal_cost(best_combination)
-    profits = cal_profit(best_combination)
+def show_information(filename, best_combination):
+    """
+    Displays the actions selected for purchase and the total
 
+    Args:
+        filename (str): Name of the file choosen
+        best_combination (list): List of the best combination af actions
+    """
+    console = Console()
+
+    # calculating total costs and profits
+    costs = cal_total_cost(best_combination)
+    profits = cal_total_profit(best_combination)
+
+    # Table creation for the information
     table = Table(title=f"Fichier : {filename}.csv", show_lines=True)
     table.add_column("Nom de l'action", justify="center")
     table.add_column("Prix", justify="center")
@@ -85,10 +101,10 @@ def show_information(filename, actions, best_combination):
     for action in best_combination:
         if action["name"] != "":
             cost = action['cost']
-            profit = cost * (1 + (action['profit'])/100)
+            profit = cost * (action['profit'])/100
             table.add_row(action['name'],
                           f"{cost}€",
-                          f"{profit - cost:.2f}€",
+                          f"{profit:.2f}€",
                           f"{action['profit']:.2f}%")
 
     table.add_row("[bold]Total",
@@ -96,34 +112,69 @@ def show_information(filename, actions, best_combination):
                   f"[bold]{profits - costs:.2f}€",
                   f"[bold]{((profits/costs) - 1) * 100:.2f}%")
 
+    # Display the table
     console.print(table)
 
 
-def cal_profit(tab):
-    if isinstance(tab, int):
-        return 0
-    return float(sum(action["cost"] * (1 + action["profit"]/100) for action in tab))
+def cal_total_profit(actions):
+    """
+    Calculating the total profit for a list of actions
+
+    Args:
+        actions (list): List of actions
+
+    Returns:
+        (float): Sum of profit
+    """
+    return float(sum(action["cost"] * (1 + action["profit"]/100) for action in actions))
 
 
-def cal_cost(tab):
-    return float(sum(x["cost"] for x in tab))
+def cal_total_cost(actions):
+    """
+    Calculating the total cost for a list of actions
+
+    Args:
+        actions (list): List of actions
+
+    Returns:
+        (float): Sum of cost
+    """
+    return float(sum(x["cost"] for x in actions))
 
 
-def sac_a_dos(MAX_EXPENSE, actions, list_actions):
+def find_best_combination(MAX_EXPENSE, actions, last_list_actions_found):
+    """
+    Find the best combination in the list of actions until there is no actions to be added
+
+    Args:
+        MAX_EXPENSE (int): Spending limit
+        actions (list): List of actions
+        last_list_actions_found (list): Last list of actions found
+
+    Returns:
+        last_list_actions_found (list): Last list of actions found when no more action to add
+    """
     n = len(actions)
+    # If no actions to add, return the last list found
     if n == 0:
-        return list_actions
+        return last_list_actions_found
+    # Take the last action in the actions list
     new_action = actions.pop()
-    if new_action not in list_actions:
-        liste1 = list_actions.copy()
-        liste1.append(new_action)
-        profit_with_x = cal_profit(liste1)
-        profit = cal_profit(list_actions)
+    # Reject action if already took
+    if new_action not in last_list_actions_found:
+        # Create the list of actions found more the action to be added
+        list_actions_found = last_list_actions_found.copy()
+        list_actions_found.append(new_action)
+        # Calculating the profit with and without the action to be added
+        profit_with_x = cal_total_profit(list_actions_found)
+        profit = cal_total_profit(last_list_actions_found)
+        # If the profit with the action to be added is greater than without it
         if profit_with_x > profit:
-            cost = cal_cost(liste1)
+            cost = cal_total_cost(list_actions_found)
+            # Check if the cost is less than MAX_EXPENSE
             if cost <= MAX_EXPENSE:
-                list_actions = liste1.copy()
-    return sac_a_dos(MAX_EXPENSE, actions, list_actions)
+                last_list_actions_found = list_actions_found.copy()
+    return find_best_combination(MAX_EXPENSE, actions, last_list_actions_found)
 
 
 @execution_information
@@ -132,25 +183,24 @@ def optimized(MAX_EXPENSE, actions):
     Find the best combination with a solution based on knapsack solution
 
     Args:
-        actions (list): list of all actions
         MAX_EXPENSE (int): Maximum amount to spend
+        actions (list): list of all actions
 
     Returns:
-        best_combination (tuple): combination with the best profit
+        best_combination (list): Combination of the best profit
     """
-    # Find the number of actions
-    actions = sorted(actions, key=lambda x: cal_profit([x])/x["cost"])
-    list0 = []
-    list1 = [{"name": "", "cost": 0, "profit": 0}]
-    while list0 != list1:
-        list0 = list1.copy()
-        list1 = sac_a_dos(MAX_EXPENSE, actions.copy(), list0)
-    return list1
+    # Sorts actions by rentability
+    actions = sorted(actions, key=lambda x: cal_total_profit([x])/x["cost"])
+    # last_combination = []
+    best_combination = [{"name": "", "cost": 0, "profit": 0}]
+    # search the best combination
+    return find_best_combination(MAX_EXPENSE, actions.copy(), best_combination)
 
 
 if __name__ == "__main__":
     # Spending limit
     MAX_EXPENSE = 500
+    # list of filenames
     filenames = ["dataset0", "dataset1", "dataset2"]
     stop = False
     while not stop:
@@ -163,6 +213,6 @@ if __name__ == "__main__":
             # Find the best combination
             best_combination = optimized(MAX_EXPENSE, actions)
             # Show information on screen
-            show_information(filename, actions, best_combination)
+            show_information(filename, best_combination)
         elif choice == "stop":
             stop = True
