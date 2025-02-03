@@ -28,7 +28,7 @@ def readFile(filename):
                 tab.append({
                     "name": data[0],
                     "cost": cost,
-                    "profit": float(data[2].replace("%", ""))
+                    "%": float(data[2].replace("%", ""))
                 })
     return tab
 
@@ -101,11 +101,11 @@ def show_information(filename, best_combination):
     for action in best_combination:
         if action["name"] != "":
             cost = action['cost']
-            profit = cost * (action['profit'])/100
+            profit = cost * (action['%'])/100
             table.add_row(action['name'],
                           f"{cost}€",
                           f"{profit:.2f}€",
-                          f"{action['profit']:.2f}%")
+                          f"{action['%']:.2f}%")
 
     table.add_row("[bold]Total",
                   f"[bold]{costs:.2f}€",
@@ -126,7 +126,7 @@ def cal_total_profit(actions):
     Returns:
         (float): Sum of profit
     """
-    return float(sum(action["cost"] * (1 + action["profit"]/100) for action in actions))
+    return float(sum(action["cost"] * (1 + action["%"]/100) for action in actions))
 
 
 def cal_total_cost(actions):
@@ -142,41 +142,6 @@ def cal_total_cost(actions):
     return float(sum(x["cost"] for x in actions))
 
 
-def find_best_combination(MAX_EXPENSE, actions, last_list_actions_found):
-    """
-    Find the best combination in the list of actions until there is no actions to be added
-
-    Args:
-        MAX_EXPENSE (int): Spending limit
-        actions (list): List of actions
-        last_list_actions_found (list): Last list of actions found
-
-    Returns:
-        last_list_actions_found (list): Last list of actions found when no more action to add
-    """
-    n = len(actions)
-    # If no actions to add, return the last list found
-    if n == 0:
-        return last_list_actions_found
-    # Take the last action in the actions list
-    new_action = actions.pop()
-    # Reject action if already took
-    if new_action not in last_list_actions_found:
-        # Create the list of actions found more the action to be added
-        list_actions_found = last_list_actions_found.copy()
-        list_actions_found.append(new_action)
-        # Calculating the profit with and without the action to be added
-        profit_with_x = cal_total_profit(list_actions_found)
-        profit = cal_total_profit(last_list_actions_found)
-        # If the profit with the action to be added is greater than without it
-        if profit_with_x > profit:
-            cost = cal_total_cost(list_actions_found)
-            # Check if the cost is less than MAX_EXPENSE
-            if cost <= MAX_EXPENSE:
-                last_list_actions_found = list_actions_found.copy()
-    return find_best_combination(MAX_EXPENSE, actions, last_list_actions_found)
-
-
 @execution_information
 def optimized(MAX_EXPENSE, actions):
     """
@@ -187,14 +152,29 @@ def optimized(MAX_EXPENSE, actions):
         actions (list): list of all actions
 
     Returns:
-        best_combination (list): Combination of the best profit
+        best_comb (list): Combination of the best profit
     """
     # Sorts actions by rentability
-    actions = sorted(actions, key=lambda x: cal_total_profit([x])/x["cost"])
-    # last_combination = []
-    best_combination = [{"name": "", "cost": 0, "profit": 0}]
-    # search the best combination
-    return find_best_combination(MAX_EXPENSE, actions.copy(), best_combination)
+    actions = sorted(actions, key=lambda x: x["%"])
+    # Initiate best_comb
+    best_comb = [{"name": "", "cost": 0, "%": 0}]
+    # Try all actions
+    while len(actions) != 0:
+        # Create a list with the last action added
+        last_action = actions.pop()
+        best_comb_with_last_action = best_comb.copy()
+        best_comb_with_last_action.append(last_action)
+        # Calculatating prite with and without the last actions added
+        profit_with_x = cal_total_profit(best_comb_with_last_action)
+        profit = cal_total_profit(best_comb)
+        # Check if the profit with the last action is greater
+        if profit_with_x > profit:
+            # Calculating the cost of the list
+            cost = cal_total_cost(best_comb_with_last_action)
+            # Check if the cost is less than the MAX_EXPENSE
+            if cost <= MAX_EXPENSE:
+                best_comb = best_comb_with_last_action
+    return best_comb
 
 
 if __name__ == "__main__":
