@@ -204,7 +204,9 @@ if __name__ == "__main__":
     filenames = ["dataset0", "dataset1", "dataset2"]
     stop = False
     while not stop:
+        # Ask user which dataset yopu want to test or stop to quit the program
         choice = input("Quel jeu de valeurs souhaitez-vous tester ? (0 ou 1 ou 2) (stop pour arrêter) ")
+        # Clean the screen
         clear_screen()
         if choice in ["0", "1", "2"]:
             filename = filenames[int(choice)]
@@ -215,4 +217,5 @@ if __name__ == "__main__":
             # Show information on screen
             show_information(filename, best_combination)
         elif choice == "stop":
+            # Stop the program
             stop = True
